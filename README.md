@@ -1,4 +1,6 @@
 # ANALISE DIOGO
+![Screenshot_1098](https://github.com/user-attachments/assets/392d2c5f-7a3f-4b57-879f-50b03984bba0)
+
 
 ----------------------
 
