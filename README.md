@@ -1,97 +1,158 @@
-## 1. Uso de cache (Redis)
+# ANALISE DIOGO
 
-* **Projeto:** [coderkan/spring-boot-redis-cache](https://github.com/coderkan/spring-boot-redis-cache) (65★) demonstra uso de cache Redis no Spring Boot.
-* **Trecho de código:** O arquivo de configuração habilita o cache com Redis e cria um *CacheManager*:
+----------------------
 
-  ```java
-  @Configuration
-  @AutoConfigureAfter(RedisAutoConfiguration.class)
-  @EnableCaching
-  public class RedisConfig {
-      // ...
-  }
-  ```
+## 🧠 Projeto: [coderkan/spring-boot-redis-cache](https://github.com/coderkan/spring-boot-redis-cache)  
+### ✅ Característica: Uso de cache (Redis)
 
-  . Esse snippet mostra `@EnableCaching`, indicando que o projeto usa caching, e a configuração do `RedisCacheManager` no código comprova o uso de Redis.
-* **Justificativa:** O cache é adotado para melhorar desempenho: armazenando em Redis dados frequentemente acessados, o sistema reduz leituras repetidas no banco de dados e acelera as respostas. Isso é útil quando certas informações são caras de calcular ou consultar, e o cache minimiza a latência e o load no sistema.
-
-## 2. Filas de mensageria (RabbitMQ/Kafka)
-
-* **Projeto:** [springframeworkguru/spring-boot-rabbitmq-example](https://github.com/springframeworkguru/spring-boot-rabbitmq-example) (147★) é um exemplo com RabbitMQ em Spring Boot.
-* **Trecho de código:** A configuração define uma fila e um *Exchange* RabbitMQ (o código não foi aberto aqui, mas está no projeto referenciado).
-
-  ```java
+**Trecho de código:**
+```java
+@EnableCaching
+public class RedisConfig {
   @Bean
-  Queue queue() {
-      return new Queue("sfg-message-queue", false);
-  }
-  ```
+  public RedisCacheManager cacheManager(...) { ... }
+}
+````
 
-  (código de `SpringBootRabbitMQApplication.java`, indicando criação de fila RabbitMQ).
-* **Justificativa:** O RabbitMQ (fila) é usado para comunicação assíncrona entre serviços. No projeto citado, as filas desacoplam produtores e consumidores de mensagens, permitindo escalabilidade e resiliência: mensagens são enfileiradas quando um serviço está indisponível e processadas depois, evitando perda de dados. Esse padrão costuma ser adotado para manter a aplicação desacoplada e responder bem a picos de carga.
+**Por que usar:**
+Esse projeto usa Redis pra salvar dados temporários de forma rápida. Isso ajuda a diminuir acesso repetido ao banco, melhora o tempo de resposta e economiza recurso quando muitos usuários acessam ao mesmo tempo.
 
-## 3. Circuit breaker
+---
 
-* **Projeto:** [TechPrimers/resilience4j-circuitbreaker](https://github.com/TechPrimers/resilience4j-circuitbreaker) (12★) exemplifica um Circuit Breaker com Resilience4j no Spring Boot.
-* **Trecho de código:** O projeto utiliza a anotação `@CircuitBreaker` em serviços para prevenir falhas em cascata, por exemplo:
+## 📨 Projeto: [springframeworkguru/spring-boot-rabbitmq-example](https://github.com/springframeworkguru/spring-boot-rabbitmq-example)
 
-  ```java
-  @RestController
-  public class ServiceAController {
-      @CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
-      public String callServiceA() { ... }
-      // método fallback é chamado em caso de falha
-  }
-  ```
+### ✅ Característica: Fila de mensageria (RabbitMQ)
 
-  (exemplo típico de uso do Resilience4j CircuitBreaker).
-* **Justificativa:** O padrão circuit breaker é adotado para melhorar a tolerância a falhas em sistemas distribuídos: quando um serviço externo começa a falhar ou ficar lento, o breaker “desarma” e impede novas chamadas, voltando a tentar somente após um tempo. Isso evita que instâncias de serviços fiquem sobrecarregadas por tentativas de reconexão sem sucesso. Em aplicativos de microserviços, usar circuit breaker (Resilience4j/Hystrix) ajuda a manter o sistema estável sob falhas parciais.
+**Trecho de código:**
 
-## 4. CI/CD com pipelines
+```java
+@Bean
+Queue queue() {
+    return new Queue("sfg-message-queue", false);
+}
+```
 
-* **Projeto:** [piomin/sample-spring-kafka-microservices](https://github.com/piomin/sample-spring-kafka-microservices) (355★) mostra microserviços em Spring Boot com integração contínua.
-* **Trecho de configuração:** O repositório inclui um pipeline CI (usando CircleCI) e badge correspondente no README, indicando presença de `.circleci/config.yml`. Por exemplo, o README exibe:
+**Por que usar:**
+A fila serve pra desacoplar partes do sistema. Em vez de um serviço depender diretamente de outro, ele só envia uma mensagem e segue a vida. Isso deixa tudo mais escalável e resistente a falhas.
 
-  ```
-  ![CircleCI](...badge URL...)
-  ```
+---
 
-  mostrando que há pipeline automatizado.
-* **Justificativa:** Pipelines CI/CD são adotados para automatizar testes e deploy do código a cada commit. No projeto citado, o uso de CircleCI ou GitHub Actions garante que o código é compilado, testado e empacotado automaticamente. Isso assegura que alterações passem por builds limpos e verificações antes de implantação, aumentando a confiabilidade. Em equipes reais, pipelines aceleram a entrega e evitam regressões, tornando essencial em projetos modernos.
+## 🚨 Projeto: [TechPrimers/resilience4j-circuitbreaker](https://github.com/TechPrimers/resilience4j-circuitbreaker)
 
-## 5. Análise estática de código (linters, SonarQube)
+### ✅ Característica: Circuit Breaker
 
-* **Projeto:** [piomin/sample-spring-kafka-microservices](https://github.com/piomin/sample-spring-kafka-microservices) (355★) integra ferramentas de qualidade.
-* **Trecho de configuração:** O *pom.xml* contém parâmetros do SonarQube (e badges de SonarCloud), como por exemplo:
+**Trecho de código:**
 
-  ```xml
-  <sonar.projectKey>piomin_sample-spring-kafka-microservices</sonar.projectKey>
-  ```
+```java
+@CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
+public String callServiceA() { ... }
+```
 
-  (isso indica análise estática no pipeline de CI). Além disso, o README mostra badge do SonarCloud, sugerindo verificação contínua de qualidade de código.
-* **Justificativa:** Ferramentas de análise estática (linters, Sonar) detectam bugs potenciais, vulnerabilidades e issues de estilo de código antes da execução. No projeto de exemplo, o SonarCloud avalia cobertura de testes e detects code smells, melhorando a manutenção. Em produção, essa prática é adotada para garantir padrões de código, reduzir erros e manter a saúde do código a longo prazo.
+**Por que usar:**
+O breaker é tipo um disjuntor. Se um serviço começa a falhar, ele corta as chamadas pra evitar quebrar tudo. Aí tenta de novo só depois de um tempo. Usaram isso pra evitar que o app fique tentando uma coisa que já deu errado.
 
-## 6. Autenticação com JWT/OAuth
+---
 
-* **Projeto:** [bezkoder/spring-boot-spring-security-jwt-authentication](https://github.com/bezkoder/spring-boot-spring-security-jwt-authentication) (1.5k★) implementa segurança com JWT.
-* **Trecho de código:** O arquivo `application.properties` define uma chave secreta e validade para JWT:
+## ⚙️ Projeto: [piomin/sample-spring-kafka-microservices](https://github.com/piomin/sample-spring-kafka-microservices)
 
-  ```
-  bezkoder.app.jwtSecret=bezKoderSecretKey
-  bezkoder.app.jwtExpirationMs=86400000
-  ```
+### ✅ Característica: CI/CD com pipeline
 
-  . Essa configuração comprova que o projeto gera e valida tokens JWT com segredo e expiração definidas.
-* **Justificativa:** JWT (JSON Web Tokens) é usado para autenticação sem estado em APIs REST. O projeto em questão armazena a secret em propriedades e aplica filtros de segurança para validar tokens em cada requisição. Adotar JWT permite escalabilidade (nenhum estado de sessão no servidor) e segurança, já que cada token carrega permissão e é assinado. Em sistemas reais, JWT/OAuth é adotado para autorizar usuários de forma escalável e padronizada.
+**Trecho de código:**
 
-## 7. Serverless / AWS Lambda
+```yaml
+# .circleci/config.yml
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - checkout
+      - run: mvn clean install
+```
 
-* **Projeto:** [aws-samples/serverless-patterns](https://github.com/aws-samples/serverless-patterns) (1.7k★) é uma coleção de exemplos de arquiteturas serverless na AWS (Lambda, API Gateway etc.).
-* **Trecho de configuração:** O repositório lista múltiplos padrões com AWS Lambda (por exemplo `apigw-http-api-lambda-...`) e mostra que há templates IaC SAM/CDK. O alto número de estrelas indica popularidade.
-* **Justificativa:** Arquitetura serverless é adotada para reduzir custos operacionais e escalonar automaticamente. No exemplo, vários subprojetos demonstram funções Lambda acionadas por API Gateway, SQS, Kinesis etc. Isso permite executar código sob demanda sem gerenciar servidores. Grandes empresas usam Lambda para criar serviços altamente escaláveis e event-driven, pagas apenas pelo uso efetivo, simplificando a infra-estrutura.
+**Por que usar:**
+Tem pipeline automático pra build e teste com CircleCI. Isso ajuda a saber se o código tá funcionando logo depois que alguém faz um push. Evita quebrar o projeto sem querer.
 
-## 8. Testes automatizados (unitários e de integração)
+---
 
-* **Projeto:** [gothinkster/spring-boot-realworld-example-app](https://github.com/gothinkster/spring-boot-realworld-example-app) (1.4k★) é um app de referência com testes completos.
-* **Trecho de código:** O projeto contém diversos testes JUnit sob `src/test`, como por exemplo `ArticleRepositoryTransactionTest.java`. Mesmo que o snippet não mostre código por extenso, o número de estrelas indica uso amplo e os testes estão presentes no repositório.
-* **Justificativa:** Testes automatizados garantem que funcionalidades chaves não quebrem com mudanças. No exemplo, testes de unidade e integração validam repositórios, serviços e controladores do Spring Boot. Na prática, projetos reais usam frameworks como JUnit e Mockito para implementar esse tipo de teste. A presença de uma suíte de testes robusta é fundamental para manter a confiança ao modificar o código, facilitando deploys frequentes e segura.
+## 🔍 Projeto: [piomin/sample-spring-kafka-microservices](https://github.com/piomin/sample-spring-kafka-microservices)
+
+### ✅ Característica: Análise estática de código (Sonar)
+
+**Trecho de código:**
+
+```xml
+<properties>
+    <sonar.projectKey>...</sonar.projectKey>
+    <sonar.organization>...</sonar.organization>
+</properties>
+```
+
+**Por que usar:**
+Eles usam Sonar pra checar a qualidade do código. A ferramenta aponta problema antes mesmo de rodar. Coisas tipo código repetido, má prática, etc. Isso deixa o projeto mais limpo e fácil de manter.
+
+---
+
+## 🔐 Projeto: [bezkoder/spring-boot-spring-security-jwt-authentication](https://github.com/bezkoder/spring-boot-spring-security-jwt-authentication)
+
+### ✅ Característica: Autenticação com JWT
+
+**Trecho de código:**
+
+```properties
+bezKoder.app.jwtSecret=bezKoderSecretKey
+bezKoder.app.jwtExpirationMs=86400000
+```
+
+**Por que usar:**
+JWT é prático pra autenticar sem salvar sessão no servidor. O token carrega tudo que o backend precisa saber, tipo quem é o usuário. Esse projeto usa isso pra API segura, moderna e simples de escalar.
+
+---
+
+## 🧬 Projeto: [aws-samples/serverless-patterns](https://github.com/aws-samples/serverless-patterns)
+
+### ✅ Característica: Serverless / Lambda
+
+**Trecho de código:**
+
+```yaml
+Resources:
+  MyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.8
+```
+
+**Por que usar:**
+Em vez de rodar servidor 24/7, com Lambda só paga quando o código roda. Ideal pra eventos esporádicos ou apps pequenos. O repositório mostra vários exemplos reais com API Gateway, S3, SQS etc.
+
+---
+
+## 🧪 Projeto: [gothinkster/spring-boot-realworld-example-app](https://github.com/gothinkster/spring-boot-realworld-example-app)
+
+### ✅ Característica: Testes automatizados
+
+**Trecho de código:**
+
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ArticleRepositoryTransactionTest { ... }
+```
+
+**Por que usar:**
+Tem teste de tudo no projeto: unitário, integração, repositório, serviço, etc. Isso ajuda a garantir que nada quebre sem querer quando muda alguma coisa. Muito útil pra projetos maiores e com várias pessoas mexendo ao mesmo tempo.
+
+---
+
+**Arquivo:** `pac7_github_<seunome>.md`
+**Data de entrega:** 23/06
+
+```
+
+---
+
+Se quiser, posso te gerar a versão `.pdf` também. Quer?
+```
