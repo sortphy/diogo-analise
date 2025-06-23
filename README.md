@@ -146,13 +146,3 @@ public class ArticleRepositoryTransactionTest { ... }
 Tem teste de tudo no projeto: unitário, integração, repositório, serviço, etc. Isso ajuda a garantir que nada quebre sem querer quando muda alguma coisa. Muito útil pra projetos maiores e com várias pessoas mexendo ao mesmo tempo.
 
 ---
-
-**Arquivo:** `pac7_github_<seunome>.md`
-**Data de entrega:** 23/06
-
-```
-
----
-
-Se quiser, posso te gerar a versão `.pdf` também. Quer?
-```
